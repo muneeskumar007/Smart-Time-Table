@@ -1,0 +1,32 @@
+# Environment / secrets
+.env
+.env.local
+backend/.env
+frontend/.env
+!*.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Docker
+*.pid
+
+# MongoDB local data (if ever run outside Docker)
+data/db/

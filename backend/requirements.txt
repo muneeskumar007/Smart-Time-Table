@@ -1,0 +1,25 @@
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+
+# Data validation
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
+email-validator>=2.2.0
+
+# MongoDB (native async client - see README.md "Driver note: Motor -> PyMongo Async")
+pymongo>=4.15,<5.0.0
+
+# Auth
+pyjwt>=2.9.0
+pwdlib[argon2]>=0.2.0
+
+# Rate limiting
+slowapi>=0.1.9
+
+# Timetable generation (Master Prompt 3)
+ortools>=9.11,<10.0
+
+# --- Reserved for later phases (uncomment when that module is implemented) ---
+# openpyxl              # Excel export
+# reportlab             # PDF export
