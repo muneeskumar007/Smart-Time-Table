@@ -5,8 +5,10 @@ import { RequireAuth, RequireRole, RedirectIfAuthenticated } from "./ProtectedRo
 import { ROLES } from "../constants";
 
 import LoginPage from "../pages/auth/LoginPage";
+import PasswordHelpPage from "../pages/auth/PasswordHelpPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import ProfilePage from "../pages/profile/ProfilePage";
+import SettingsPage from "../pages/settings/SettingsPage";
 import DepartmentsPage from "../pages/departments/DepartmentsPage";
 import UsersPage from "../pages/users/UsersPage";
 import FacultyPage from "../pages/faculty/FacultyPage";
@@ -31,6 +33,7 @@ export function AppRoutes() {
         <Route element={<RedirectIfAuthenticated />}>
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/help/password" element={<PasswordHelpPage />} />
           </Route>
         </Route>
 
@@ -38,6 +41,7 @@ export function AppRoutes() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
 
             <Route element={<RequireRole roles={ADMIN_ONLY} />}>
               <Route path="/departments" element={<DepartmentsPage />} />

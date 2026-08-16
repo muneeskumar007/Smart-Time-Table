@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { authApi } from "../services/api/authApi";
 import { setAccessToken, setOnRefreshFailed } from "../services/api/axiosClient";
+import { useToast } from "./ToastContext";
 import { getErrorMessage } from "../utils";
 
 const AuthContext = createContext(null);
@@ -8,6 +9,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const toast = useToast();
 
   // On first load there's no access token in memory (a hard refresh
   // wipes it, by design). If the browser is still holding a valid
@@ -41,9 +43,20 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  useEffect(() => {
-    setOnRefreshFailed(clearSession);
+  // Distinct from clearSession itself: this only fires when an
+  // *in-progress* session's refresh attempt fails (axiosClient's 401
+  // interceptor, wired below) - never on first-load bootstrap (silent,
+  // there's nothing to "expire" yet) and never on an explicit logout
+  // (the person already knows they signed out).
+  const handleSessionExpired = useCallback(() => {
+    clearSession();
+    toast.error("Your session has expired. Please log in again.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSession]);
+
+  useEffect(() => {
+    setOnRefreshFailed(handleSessionExpired);
+  }, [handleSessionExpired]);
 
   const login = useCallback(async (email, password, rememberMe) => {
     try {

@@ -133,7 +133,7 @@ docker compose -f docker-compose.prod.yml up --build -d
 
 ```bash
 cd backend
-python -m venv .venv && .venv/Scripts/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 uvicorn app.main:app --reload

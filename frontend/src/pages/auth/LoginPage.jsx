@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate, useLocation } from "react-router";
-import { LogIn } from "lucide-react";
+import { useNavigate, useLocation, Link } from "react-router";
+import { LogIn, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { TextField, CheckboxField } from "../../components/common/FormControls";
 import { Button } from "../../components/common/Button";
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [formError, setFormError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -61,16 +62,32 @@ export default function LoginPage() {
           {...register("email")}
         />
 
-        <TextField
-          label="Password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="••••••••"
-          error={errors.password?.message}
-          {...register("password")}
-        />
+        <div className="relative">
+          <TextField
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            placeholder="••••••••"
+            error={errors.password?.message}
+            className="pr-10"
+            {...register("password")}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
 
-        <CheckboxField label="Remember me on this device" {...register("rememberMe")} />
+        <div className="flex items-center justify-between">
+          <CheckboxField label="Remember me on this device" {...register("rememberMe")} />
+          <Link to="/help/password" className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400">
+            Forgot password?
+          </Link>
+        </div>
 
         <Button type="submit" icon={LogIn} isLoading={isSubmitting} className="mt-1 w-full">
           Sign in
