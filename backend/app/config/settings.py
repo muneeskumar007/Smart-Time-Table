@@ -52,6 +52,13 @@ class Settings(BaseSettings):
     RATE_LIMIT_LOGIN: str = "5/minute"
     RATE_LIMIT_DEFAULT: str = "120/minute"
 
+    # --- Timetable generation ---
+    # CP-SAT's parallel search defaults to assuming real dedicated cores.
+    # Free-tier hosts (e.g. Render's free web service gives ~0.1 CPU) are
+    # nowhere near that - override this to 1 or 2 in such environments
+    # rather than oversubscribing a fractional CPU allocation.
+    SOLVER_NUM_SEARCH_WORKERS: int = 8
+
     # --- Logging ---
     LOG_LEVEL: str = "INFO"
 

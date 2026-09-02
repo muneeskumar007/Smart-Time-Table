@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from app.algorithms.constraints.base import GenerationContext
 from app.algorithms.generator import GenerationResult, TimetableGeneratorEngine
 from app.auth.dependencies import ensure_department_access
+from app.config.settings import get_settings
 from app.core.constants import Collections
 from app.core.exceptions import ValidationException
 from app.database.connection import get_database
@@ -130,7 +131,11 @@ class TimetableGenerationService:
             await self._mark_failed(placeholder_doc["id"], log_id, str(exc.message))
             raise
 
-        result: GenerationResult = await self.engine.generate(ctx, max_solve_seconds=payload.max_solve_seconds)
+        result: GenerationResult = await self.engine.generate(
+            ctx,
+            max_solve_seconds=payload.max_solve_seconds,
+            num_search_workers=get_settings().SOLVER_NUM_SEARCH_WORKERS,
+        )
 
         now = datetime.now(timezone.utc)
         if not result.entries:

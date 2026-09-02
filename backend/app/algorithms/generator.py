@@ -106,7 +106,12 @@ class TimetableGeneratorEngine:
             externally_occupied_rooms=frozenset(externally_occupied_rooms),
         )
 
-    async def generate(self, ctx: GenerationContext, max_solve_seconds: float = 20.0) -> GenerationResult:
+    async def generate(
+        self,
+        ctx: GenerationContext,
+        max_solve_seconds: float = 20.0,
+        num_search_workers: int = 8,
+    ) -> GenerationResult:
         start = time.perf_counter()
 
         if not ctx.demands:
@@ -137,7 +142,7 @@ class TimetableGeneratorEngine:
 
         solver = cp_model.CpSolver()
         solver.parameters.max_time_in_seconds = max_solve_seconds
-        solver.parameters.num_search_workers = 8
+        solver.parameters.num_search_workers = num_search_workers
 
         status = await asyncio.to_thread(solver.solve, model)
         duration = time.perf_counter() - start

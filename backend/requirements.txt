@@ -9,6 +9,10 @@ email-validator>=2.2.0
 
 # MongoDB (native async client - see README.md "Driver note: Motor -> PyMongo Async")
 pymongo>=4.15,<5.0.0
+# Needed for mongodb+srv:// connection strings (e.g. MongoDB Atlas) -
+# PyMongo resolves the SRV DNS record itself but requires dnspython
+# installed to do it.
+dnspython>=2.6.0
 
 # Auth
 pyjwt>=2.9.0
