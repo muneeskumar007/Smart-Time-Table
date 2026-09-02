@@ -24,6 +24,7 @@ A production-oriented college department timetable management system: department
 - [Project structure](#project-structure)
 - [Testing](#testing)
 - [Production deployment](#production-deployment)
+- [Free-tier deployment (Netlify + Render + MongoDB Atlas)](#free-tier-deployment-netlify--render--mongodb-atlas)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -230,6 +231,7 @@ smart-timetable-system/
 │       ├── services/api/               # Axios client (auto-refresh on 401) + per-entity API objects
 │       ├── context/                    # Auth, Toast
 │       └── routes/                     # Route tree + auth/role guards
+│   └── netlify.toml                    # Netlify build config + the /api proxy rewrite (free-tier deployment)
 ├── backend/
 │   └── app/
 │       ├── auth/, config/, database/, core/, middleware/, utils/
@@ -242,8 +244,10 @@ smart-timetable-system/
 ├── nginx/nginx.conf                    # Production reverse proxy (only used by docker-compose.prod.yml)
 ├── docker-compose.yml                  # Development (hot reload)
 ├── docker-compose.prod.yml             # Production (built images, nginx-fronted)
+├── render.yaml                         # Render Blueprint for the backend (free-tier deployment)
 └── .env.example
 ```
+
 
 ## Testing
 
@@ -266,6 +270,19 @@ No frontend test suite exists yet - the frontend itself is new enough that addin
 1. Copy `.env.example` to `.env` and set real values - **especially** `JWT_SECRET_KEY`, `SUPER_ADMIN_PASSWORD`, and `CORS_ORIGINS`.
 2. Put TLS termination in front of the nginx container (a managed load balancer, or add a cert to `nginx/nginx.conf` yourself) - it currently serves plain HTTP, which is fine behind a TLS-terminating proxy but not on its own for a public deployment.
 3. `docker compose -f docker-compose.prod.yml up --build -d`
+
+## Free-tier deployment (Netlify + Render + MongoDB Atlas)
+
+A no-server-to-manage alternative to the Docker/VM path above, using each platform's permanently-free tier. `render.yaml` and `frontend/netlify.toml` in this repo are already configured for it - only account setup and a few pasted values are left to do.
+
+**Why no code changes were needed for auth/CORS:** Netlify's `/api/*` redirect rule in `frontend/netlify.toml` proxies API calls to Render *from Netlify's own edge*, not from the browser. As far as the browser is concerned, it's talking to one origin the whole time, so the existing httpOnly refresh-token cookie (`SameSite=Lax`) and the frontend's relative `/api/v1` base URL both keep working unmodified. (This specific trick relies on Netlify's rewrite-to-external-origin support - Cloudflare Pages, for comparison, explicitly does not support proxying to an external domain, so this exact setup is Netlify-specific.)
+
+1. **MongoDB Atlas**: create a free M0 cluster, add a database user, and under Network Access add `0.0.0.0/0` (Render's free tier has no static outbound IP to allowlist more narrowly - Atlas still requires the database username/password regardless). Copy the `mongodb+srv://...` connection string.
+2. **Render**: New → Blueprint → point it at this repo. It reads `render.yaml` automatically. Fill in the values marked "you fill this in" in that file: `MONGODB_URL` (from step 1), `CORS_ORIGINS` (your Netlify URL, once you know it from step 3), `SUPER_ADMIN_EMAIL`/`SUPER_ADMIN_PASSWORD`. `JWT_SECRET_KEY` is generated for you automatically - you never need to create one. Note the resulting service URL.
+3. **Netlify**: New site from Git → same repo → set **Base directory** to `frontend`. If your Render service isn't named `smart-timetable-backend`, update the URL in `frontend/netlify.toml`'s redirect rule to match before deploying.
+4. Go back to Render and set `CORS_ORIGINS` to the Netlify URL from step 3, then redeploy the backend.
+
+**Known limitation of this path**: Render's free web service gives roughly 0.1 CPU, far below what the CP-SAT solver assumes by default - `render.yaml` sets `SOLVER_NUM_SEARCH_WORKERS=1` accordingly, but expect timetable generation to be noticeably slower than on a real machine, and the service spins down after 15 minutes of inactivity (first request after that takes 30-60s to wake it back up).
 
 ## Troubleshooting
 

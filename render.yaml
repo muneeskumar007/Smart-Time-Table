@@ -1,0 +1,51 @@
+# Render Blueprint - deploy via "New +" -> "Blueprint" in the Render
+# dashboard, pointing it at this repo. Render finds this file
+# automatically. See https://render.com/docs/blueprint-spec
+#
+# Reference: https://render.com/docs/monorepo-support - rootDir makes
+# dockerfilePath/dockerContext resolve relative to backend/, not the
+# repo root, since this is a monorepo with frontend/ as a sibling.
+services:
+  - type: web
+    name: smart-timetable-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: MONGODB_DB_NAME
+        value: smart_timetable_db
+      # Paste your MongoDB Atlas connection string here in the Render
+      # dashboard after creating this service (sync: false means Render
+      # won't try to read it from this file - you fill it in yourself,
+      # so it's never committed to Git).
+      - key: MONGODB_URL
+        sync: false
+      # Render generates a real random secret for this automatically -
+      # you never need to create or paste one yourself.
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      # Your Netlify site URL, e.g. https://smart-timetable.netlify.app
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SUPER_ADMIN_EMAIL
+        sync: false
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      # Render's free web service gives a fraction of one vCPU - the
+      # CP-SAT solver's default assumption of 8 parallel workers would
+      # badly oversubscribe that, so this pins it down to 1.
+      - key: SOLVER_NUM_SEARCH_WORKERS
+        value: "1"
+      - key: RATE_LIMIT_LOGIN
+        value: "5/minute"
+      - key: RATE_LIMIT_DEFAULT
+        value: "120/minute"
+      - key: LOG_LEVEL
+        value: INFO

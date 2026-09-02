@@ -1,0 +1,38 @@
+# Netlify config for the frontend. When connecting this repo to
+# Netlify, set the site's "Base directory" to "frontend" (this is a
+# monorepo with backend/ as a sibling folder) - then this file's
+# `command`/`publish` paths, which are relative to that base directory,
+# resolve correctly.
+#
+# Order matters: Netlify matches redirects top-to-bottom and stops at
+# the first hit, so the /api/* proxy rule MUST come before the catch-all
+# SPA fallback rule below it - otherwise the SPA rule would swallow API
+# requests before they ever reach the proxy rule.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Proxies API calls through Netlify's own edge to the Render backend.
+# Because this is a rewrite (status = 200, not a client-side redirect),
+# the browser only ever talks to your Netlify domain - it never sees
+# the Render URL directly. That's what keeps the existing httpOnly
+# refresh-token cookie (SameSite=Lax) working with zero backend changes:
+# as far as the browser is concerned, frontend and backend are the same
+# origin.
+#
+# Replace the URL below with your actual Render service URL if you
+# named it something other than "smart-timetable-backend".
+[[redirects]]
+  from = "/api/*"
+  to = "https://smart-timetable-backend.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback: any other path (e.g. a deep link like /departments, or
+# a hard refresh on a client-side route) serves index.html so React
+# Router can take over, instead of Netlify returning its own 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
