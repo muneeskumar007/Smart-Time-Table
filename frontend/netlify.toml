@@ -25,7 +25,7 @@
 # named it something other than "smart-timetable-backend".
 [[redirects]]
   from = "/api/*"
-  to = "https://smart-timetable-backend.onrender.com/api/:splat"
+  to = "https://smart-timetable-backend-b5e5.onrender.com/api/:splat"
   status = 200
   force = true
 
